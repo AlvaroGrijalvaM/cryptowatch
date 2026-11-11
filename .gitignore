@@ -1,0 +1,34 @@
+# Gradle files
+.gradle/
+/build/
+
+# Local configuration
+/local.properties
+
+# IDE settings
+/.idea/
+/*.iml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+/.AppleDouble
+/Legacy Mac OS X/
+
+# Binary and package files
+*.pem
+*.pem
+*.key
+*.cert
+
+# Android specific
+/.gradle/
+/build/
+/caps
+/local.properties
+/gradle.properties
+/.idea
+/.externalNativeBuild
+
+# Keystore files
+*.keystore

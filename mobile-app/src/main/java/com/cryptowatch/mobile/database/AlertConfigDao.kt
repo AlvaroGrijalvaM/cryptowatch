@@ -1,0 +1,28 @@
+package com.cryptowatch.mobile.database
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+
+@Dao
+interface AlertConfigDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertConfig(config: AlertConfigEntity)
+
+    @Query("SELECT * FROM alert_configurations WHERE cryptoId = :cryptoId")
+    suspend fun getConfigByCrypto(cryptoId: String): AlertConfigEntity?
+
+    @Query("SELECT * FROM alert_configurations")
+    suspend fun getAllConfigs(): List<AlertConfigEntity>
+
+    @Query("DELETE FROM alert_configurations WHERE cryptoId = :cryptoId")
+    suspend fun deleteConfig(cryptoId: String)
+
+    @Update
+    suspend fun updateConfig(config: AlertConfigEntity)
+
+    @Query("UPDATE alert_configurations SET isActive = :isActive WHERE cryptoId = :cryptoId")
+    suspend fun setActive(cryptoId: String, isActive: Boolean)
+}

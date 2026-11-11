@@ -1,9 +1,9 @@
 package com.cryptowatch.watch.database
 
-import androidx.lifecycle.LiveData
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class WatchRepository(
     private val cryptoDao: CryptoDao,
@@ -12,12 +12,10 @@ class WatchRepository(
     private val workManager: WorkManager
 ) {
 
-    // Insertar criptomoneda en background
-    suspend fun insertCrypto(crypto: CryptoEntity) = Executors.newSingleThreadExecutor().submit {
-        cryptoDao.insertCrypto(crypto).get()
-    }.get()
+    suspend fun insertCrypto(crypto: CryptoEntity) {
+        cryptoDao.insertCrypto(crypto)
+    }
 
-    // Configurar alerta
     suspend fun configureAlert(cryptoId: String, thresholdType: String, thresholdValue: Double): AlertConfigEntity {
         val config = AlertConfigEntity(
             id = 0,
@@ -31,18 +29,15 @@ class WatchRepository(
         return config
     }
 
-    // Obtener configuración de alerta
-    fun getAlertConfig(cryptoId: String): AlertConfigEntity? {
+    suspend fun getAlertConfig(cryptoId: String): AlertConfigEntity? {
         return alertConfigDao.getConfigByCrypto(cryptoId)
     }
 
-    // Activar/desactivar alerta
     suspend fun setAlertActive(cryptoId: String, isActive: Boolean) {
         alertConfigDao.setActive(cryptoId, isActive)
     }
 
-    // Registrar alerta activada
-    fun registerAlert(cryptoId: String, price: Double, variation: Double) {
+    suspend fun registerAlert(cryptoId: String, price: Double, variation: Double) {
         val history = AlertHistoryEntity(
             id = 0,
             cryptoId = cryptoId,
@@ -53,27 +48,20 @@ class WatchRepository(
         alertHistoryDao.insertHistory(history)
     }
 
-    // Obtener últimas alertas
-    fun getRecentAlerts(cryptoId: String): List<AlertHistoryEntity> {
+    suspend fun getRecentAlerts(cryptoId: String): List<AlertHistoryEntity> {
         return alertHistoryDao.getRecentAlerts(cryptoId)
     }
 
-    // Programar verificación periódica de precios
-    fun startPriceCheckWorker(cryptoIds: List<String>) {
-        val workRequest = workManager.periodicUniqueWork(
-            "PriceCheckWorker",
-            workManager.getDefaultPeriodicSpec("PriceCheckWorker"),
-            15, java.util.concurrent.TimeUnit.MINUTES
-        )
+    fun startPriceCheckWorker() {
+        val workRequest = PeriodicWorkRequestBuilder<WatchPriceCheckWorker>(15, TimeUnit.MINUTES).build()
         workManager.enqueueUniquePeriodicWork(
-            "PriceCheckWorker",
-            WorkManager.enqueueExistingPeriodicWorkPolicy.UPDATE,
+            "WatchPriceCheckWorker",
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             workRequest
         )
     }
 
-    // Detener worker
-    fun stopPriceCheckWorker(workManager: WorkManager) {
-        workManager.cancelUniqueWork("PriceCheckWorker")
+    fun stopPriceCheckWorker() {
+        workManager.cancelUniqueWork("WatchPriceCheckWorker")
     }
 }

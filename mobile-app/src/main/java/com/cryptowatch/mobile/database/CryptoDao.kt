@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CryptoDao {
@@ -15,6 +16,9 @@ interface CryptoDao {
 
     @Query("SELECT * FROM cryptocurrencies")
     suspend fun getAllCryptos(): List<CryptoEntity>
+
+    @Query("SELECT * FROM cryptocurrencies")
+    fun getAllCryptosFlow(): Flow<List<CryptoEntity>>
 
     @Query("DELETE FROM cryptocurrencies")
     suspend fun clearAllCryptos()

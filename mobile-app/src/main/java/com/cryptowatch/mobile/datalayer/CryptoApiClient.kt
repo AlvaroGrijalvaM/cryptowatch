@@ -1,24 +1,21 @@
 package com.cryptowatch.mobile.datalayer
 
-import retrofit2.Retrofit
-import retrofit.converter.scalars.ScalarsConverterFactory
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.KotlinJsonAdapterFactory
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
 
 object CryptoApiClient {
     private const val BASE_URL = "https://api.coingecko.com/api/v3/"
-    private lateinit var retrofit: Retrofit
-    private val apiService: CryptoApiService
+    
+    private val moshi = Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
 
-    init {
-        val moshi = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-        retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .build()
-        apiService = retrofit.create(CryptoApiService::class.java)
-    }
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
 
-    fun getApiService(): CryptoApiService = apiService
+    val apiService: CryptoApiService = retrofit.create(CryptoApiService::class.java)
 }

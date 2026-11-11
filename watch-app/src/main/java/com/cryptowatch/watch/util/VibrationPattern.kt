@@ -1,22 +1,32 @@
 package com.cryptowatch.watch.util
 
 import android.content.Context
-import androidx.core.content.ContextCompat
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 
 object VibrationPattern {
-    // Patrón de vibración positivo: corto-largo-corto (incremento)
     val POSITIVE: LongArray = longArrayOf(0, 100, 200)
-    
-    // Patrón de vibración negativo: largo-corto-largo (disminución)
     val NEGATIVE: LongArray = longArrayOf(200, 100, 200)
-    
-    // Patrón de vibración neutra/none
     val NEUTRAL: LongArray = longArrayOf(0)
 
     fun vibrate(context: Context, pattern: LongArray) {
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-        if (vibrator.hasVibrator) {
-            vibrator.vibrate(pattern, -1)
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+            vibratorManager?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
+
+        if (vibrator?.hasVibrator() == true) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(pattern, -1)
+            }
         }
     }
 

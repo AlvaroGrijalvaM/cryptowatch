@@ -7,13 +7,13 @@ import androidx.room.Query
 
 @Dao
 interface AlertHistoryDao {
-    @Insert(onConflict = OnConflictStrategy.KEEP)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: AlertHistoryEntity)
 
-    @Query("SELECT * FROM alert_history WHERE cryptoId = :cryptoId ORDER BY triggeredAt DESC LIMIT 50")
+    @Query("SELECT * FROM alert_history WHERE crypto_id = :cryptoId ORDER BY triggered_at DESC LIMIT 50")
     suspend fun getRecentAlerts(cryptoId: String): List<AlertHistoryEntity>
 
-    @Query("DELETE FROM alert_history WHERE triggeredAt < :olderThan")
+    @Query("DELETE FROM alert_history WHERE triggered_at < :olderThan")
     suspend fun cleanOldAlerts(olderThan: Long)
 
     @Query("SELECT COUNT(*) FROM alert_history")

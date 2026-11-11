@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "alert_history")
 data class AlertHistoryEntity(
-    @PrimaryKey @ColumnInfo(name = "id") val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Int = 0,
     @ColumnInfo(name = "crypto_id") val cryptoId: String,
     @ColumnInfo(name = "triggered_price") val triggeredPrice: Double,
     @ColumnInfo(name = "variation_percent") val variationPercent: Double,

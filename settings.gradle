@@ -1,4 +1,17 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories { google(); mavenCentral() }
+}
+
+rootProject.name = 'CryptoWatch'
 include ':mobile-app'
 include ':watch-app'
-project(':mobile-app').projectDir = new java.io.File(rootProject.projectDir, 'mobile-app')
-project(':watch-app').projectDir = new java.io.File(rootProject.projectDir, 'watch-app')
+

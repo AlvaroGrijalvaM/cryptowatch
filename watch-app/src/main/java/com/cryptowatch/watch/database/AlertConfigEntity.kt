@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "alert_configurations")
 data class AlertConfigEntity(
-    @PrimaryKey @ColumnInfo(name = "id") val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Int = 0,
     @ColumnInfo(name = "crypto_id") val cryptoId: String,
     @ColumnInfo(name = "threshold_type") val thresholdType: String,
     @ColumnInfo(name = "threshold_value") val thresholdValue: Double,

@@ -10,7 +10,7 @@ interface CryptoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCrypto(crypto: CryptoEntity)
 
-    @Query("SELECT * FROM cryptocurrencies WHERE cryptoId = :cryptoId")
+    @Query("SELECT * FROM cryptocurrencies WHERE id = :cryptoId")
     suspend fun getCryptoById(cryptoId: String): CryptoEntity?
 
     @Query("SELECT * FROM cryptocurrencies")
@@ -19,6 +19,6 @@ interface CryptoDao {
     @Query("DELETE FROM cryptocurrencies")
     suspend fun clearAllCryptos()
 
-    @Query("UPDATE cryptocurrencies SET last_price_usd = :price, last_update = :timestamp WHERE cryptoId = :cryptoId")
+    @Query("UPDATE cryptocurrencies SET last_price_usd = :price, last_update = :timestamp WHERE id = :cryptoId")
     suspend fun updateCryptoPrice(cryptoId: String, price: Double, timestamp: Long)
 }

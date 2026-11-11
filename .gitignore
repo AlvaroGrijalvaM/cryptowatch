@@ -1,9 +1,14 @@
 # Gradle files
 .gradle/
 /build/
+mobile-app/build/
+watch-app/build/
 
 # Local configuration
 /local.properties
+
+# Gradle properties - contains local JDK path, should not be shared
+/gradle.properties
 
 # IDE settings
 /.idea/
@@ -26,9 +31,8 @@
 /build/
 /caps
 /local.properties
-/gradle.properties
 /.idea
 /.externalNativeBuild
 
 # Keystore files
-*.keystore
+*.keystore-

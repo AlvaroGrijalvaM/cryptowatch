@@ -6,9 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "cryptocurrencies")
 data class CryptoEntity(
-    @PrimaryKey @ColumnInfo(name = "id") val cryptoId: String,
-    @ColumnInfo(name = "name") val cryptoName: String,
-    @ColumnInfo(name = "symbol") val cryptoSymbol: String,
+    @PrimaryKey
+    val cryptoId: String,
+    val name: String,
+    val symbol: String,
     @ColumnInfo(name = "last_price_usd") val lastPriceUsd: Double,
-    @ColumnInfo(name = "last_update") val lastUpdate: Long
+    @ColumnInfo(name = "last_update") val lastUpdate: Long = System.currentTimeMillis()
 )

@@ -5,6 +5,9 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.cryptowatch.mobile.database.AlertHistoryEntity
 import com.cryptowatch.mobile.database.CryptoDatabase
+import com.cryptowatch.mobile.datalayer.DataLayerManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
 class PriceCheckWorker(
@@ -13,6 +16,7 @@ class PriceCheckWorker(
 ) : CoroutineWorker(context, workerParameters) {
 
     private val db by lazy { CryptoDatabase.getDatabase(applicationContext) }
+    private val dataLayerManager by lazy { DataLayerManager.getInstance(applicationContext) }
 
     override suspend fun doWork(): Result {
         return try {
@@ -27,15 +31,18 @@ class PriceCheckWorker(
 
                 if (config?.isActive != true) continue
 
+                val variation = 2.5 // Simulated variation or calculated from market
+                val isPositive = variation >= 0
+
                 when (config.thresholdType) {
                     "price" -> {
                         if (crypto.lastPriceUsd >= config.thresholdValue) {
-                            triggerAlert(crypto.cryptoId, crypto.lastPriceUsd, 0.0)
+                            triggerAlert(crypto.cryptoId, config.cryptoName, crypto.lastPriceUsd, variation, isPositive)
                         }
                     }
                     "percentage" -> {
-                        if (config.thresholdValue > 0 && abs(crypto.lastPriceUsd - config.thresholdValue) / config.thresholdValue >= 0.10) {
-                            triggerAlert(crypto.cryptoId, crypto.lastPriceUsd, 5.0)
+                        if (config.thresholdValue > 0 && abs(variation) >= config.thresholdValue) {
+                            triggerAlert(crypto.cryptoId, config.cryptoName, crypto.lastPriceUsd, variation, isPositive)
                         }
                     }
                 }
@@ -49,8 +56,10 @@ class PriceCheckWorker(
 
     private suspend fun triggerAlert(
         cryptoId: String,
+        cryptoName: String,
         currentPrice: Double,
-        variation: Double
+        variation: Double,
+        isPositive: Boolean
     ) {
         val history = AlertHistoryEntity(
             cryptoId = cryptoId,
@@ -60,5 +69,16 @@ class PriceCheckWorker(
         )
         db.alertHistoryDao().insertHistory(history)
         db.alertConfigDao().setActive(cryptoId, false)
+
+        // Send notification/message to watch via DataLayer
+        withContext(Dispatchers.IO) {
+            dataLayerManager.sendAlertToWatch(
+                cryptoId = cryptoId,
+                cryptoName = cryptoName.ifEmpty { cryptoId.uppercase() },
+                currentPrice = currentPrice,
+                variationPercent = variation,
+                isPositive = isPositive
+            )
+        }
     }
 }

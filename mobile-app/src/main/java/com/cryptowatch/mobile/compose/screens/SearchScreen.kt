@@ -8,16 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.cryptowatch.mobile.compose.components.CryptoCard
+import java.util.Locale
 
 @Composable
 fun SearchScreen(
-    onCryptoSelected: (cryptoId: String, cryptoName: String) -> Unit,
-    onBack: () -> Unit,
-    cryptoItems: List<Pair<String, String>> = listOf(
-        Pair("btc", "Bitcoin"),
-        Pair("eth", "Ethereum"),
-        Pair("sol", "Solana")
-    )
+    cryptoList: List<CryptoDisplayInfo>,
+    onCryptoSelected: (cryptoId: String, cryptoName: String, price: Double, variation: Double) -> Unit,
+    onAlertConfigure: (cryptoId: String, cryptoName: String, price: Double) -> Unit,
+    onBack: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -31,34 +29,67 @@ fun SearchScreen(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Buscar criptomoneda") },
+            label = { Text("Buscar por nombre o símbolo (BTC, ETH...)") },
+            placeholder = { Text("Ej. Bitcoin o sol") },
             modifier = Modifier.fillMaxWidth(),
-            enabled = true
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val filtered = cryptoItems.filter { it.second.contains(searchQuery, ignoreCase = true) || it.first.contains(searchQuery, ignoreCase = true) }
+        val filtered = remember(searchQuery, cryptoList) {
+            if (searchQuery.isBlank()) {
+                cryptoList
+            } else {
+                cryptoList.filter {
+                    it.name.contains(searchQuery, ignoreCase = true) ||
+                    it.id.contains(searchQuery, ignoreCase = true)
+                }
+            }
+        }
 
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(filtered.size) { index ->
-                val crypto = filtered[index]
-                CryptoCard(
-                    cryptoId = crypto.first,
-                    cryptoName = crypto.second,
-                    onSelect = { onCryptoSelected(crypto.first, crypto.second) }
+        if (filtered.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No se encontraron resultados para '$searchQuery'",
+                    style = MaterialTheme.typography.bodyMedium
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filtered.size) { index ->
+                    val crypto = filtered[index]
+                    CryptoCard(
+                        cryptoId = crypto.id,
+                        cryptoName = crypto.name,
+                        price = String.format(Locale.ROOT, "%.2f", crypto.priceUsd),
+                        variation = crypto.variation24h,
+                        onSelect = {
+                            onCryptoSelected(crypto.id, crypto.name, crypto.priceUsd, crypto.variation24h)
+                        },
+                        onConfigureAlert = {
+                            onAlertConfigure(crypto.id, crypto.name, crypto.priceUsd)
+                        }
+                    )
+                }
             }
         }
 
         Button(
             onClick = onBack,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         ) {
-            Text("Volver")
+            Text("Volver al Inicio")
         }
     }
 }

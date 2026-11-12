@@ -22,15 +22,12 @@ watch-app/build/
 
 # Binary and package files
 *.pem
-*.pem
 *.key
 *.cert
 
 # Android specific
 /.gradle/
-/build/
 /caps
-/local.properties
 /.idea
 /.externalNativeBuild
 
